@@ -27,69 +27,49 @@
 		</script>
 	</head>
 	<body>
-		<script type="module">
-			import * as THREE from 'three';
-			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-			const scene = new THREE.Scene();
-			// const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-			const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500 );
-			camera.position.set( 0, 0, 100 );
-			camera.lookAt( 0, 0, 0 );
-			
-			const renderer = new THREE.WebGLRenderer();
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild( renderer.domElement );
+		<script>
+        // Сцена
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-			const l_color = 0xFFFFFF;
-			const l_intensity = 1;
-			const light = new THREE.AmbientLight(l_color, l_intensity);
+        // Освещение
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1).normalize();
+        scene.add(directionalLight);
 
-			const loader = new GLTFLoader();
-			let shrek;
-			loader.load( 'shrek.glb', function ( gltf ) {
-			const root = gltf.scene;
-			scene.add(root);
-  			console.log(dumpObject(root).join('\n'));
+        // Загрузка 3D модели
+        const loader = new THREE.GLTFLoader();
+        loader.load('path/to/your/model.glb', function(gltf) {
+            const model = gltf.scene;
+            scene.add(model);
 
-			shrek = root.getObjectByName('Sketchfab_model');
-			shrek.position.x = 0;
-			shrek.position.y = 0;
-			shrek.scale.x = 1;
-			shrek.scale.y = 1;
-			shrek.scale.z = 1;
-				
-			},
-			function ( xhr ) {
-				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-			},
-			function ( error ) {
-				console.error( error );
-			} );
-			
-			
-			function animate() {
-				requestAnimationFrame( animate );
+            // Вращение модели
+            function animate() {
+                requestAnimationFrame(animate);
+                model.rotation.y += 0.01; // Вращение по оси Y
+                renderer.render(scene, camera);
+            }
+            animate();
+        }, undefined, function(error) {
+            console.error(error);
+        });
 
-				if (shrek) {
-					shrek.rotation.z += 0.01;
-				}
-				
-				renderer.render( scene, camera );
-			}
-			animate();
+        // Позиция камеры
+        camera.position.z = 5;
 
-			function dumpObject(obj, lines = [], isLast = true, prefix = '') {
-				  const localPrefix = isLast ? '└─' : '├─';
-				  lines.push(`${prefix}${prefix ? localPrefix : ''}${obj.name || '*no-name*'} [${obj.type}]`);
-				  const newPrefix = prefix + (isLast ? '  ' : '│ ');
-				  const lastNdx = obj.children.length - 1;
-				  obj.children.forEach((child, ndx) => {
-				    const isLast = ndx === lastNdx;
-				    dumpObject(child, lines, isLast, newPrefix);
-				  });
-				  return lines;
-				}
-		</script>
-		<div id="info"></div>
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
 	</body>
 </html>
