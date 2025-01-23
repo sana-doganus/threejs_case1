@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Three.js_1</title>
+		<style>
+			body { margin: 0; }
+			#info {
+			position: absolute;
+			top: 25px;
+			width: 100%;
+			text-align: center;
+			z-index: 100;
+			display:block;
+			font-size: 50px;
+			color: #FFFFFF;
+			font-family: Courier New;
+			}
+		</style>
+		<script type="importmap">
+		  {
+		    "imports": {
+		      "three": "https://unpkg.com/three@0.156.0/build/three.module.js",
+		      "three/addons/": "https://unpkg.com/three@0.156.0/examples/jsm/"
+		    }
+		  }
+		</script>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from 'three';
+			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+			const scene = new THREE.Scene();
+			// const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500 );
+			camera.position.set( 0, 0, 100 );
+			camera.lookAt( 0, 0, 0 );
+			
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			const l_color = 0xFFFFFF;
+			const l_intensity = 1;
+			const light = new THREE.AmbientLight(l_color, l_intensity);
+
+			const loader = new GLTFLoader();
+			let shrek;
+			loader.load( 'shrek.glb', function ( gltf ) {
+			const root = gltf.scene;
+			scene.add(root);
+  			console.log(dumpObject(root).join('\n'));
+
+			shrek = root.getObjectByName('Sketchfab_model');
+			shrek.position.x = 0;
+			shrek.position.y = 0;
+			shrek.scale.x = 10;
+			shrek.scale.y = 10;
+			shrek.scale.z = 10;
+				
+			},
+			function ( xhr ) {
+				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+			},
+			function ( error ) {
+				console.error( error );
+			} );
+			
+			
+			function animate() {
+				requestAnimationFrame( animate );
+
+				if (shrek) {
+					shrek.rotation.z += 0.01;
+				}
+				
+				renderer.render( scene, camera );
+			}
+			animate();
+
+			function dumpObject(obj, lines = [], isLast = true, prefix = '') {
+				  const localPrefix = isLast ? '└─' : '├─';
+				  lines.push(`${prefix}${prefix ? localPrefix : ''}${obj.name || '*no-name*'} [${obj.type}]`);
+				  const newPrefix = prefix + (isLast ? '  ' : '│ ');
+				  const lastNdx = obj.children.length - 1;
+				  obj.children.forEach((child, ndx) => {
+				    const isLast = ndx === lastNdx;
+				    dumpObject(child, lines, isLast, newPrefix);
+				  });
+				  return lines;
+				}
+		</script>
+		<div id="info">Geometry</div>
+	</body>
+</html>
